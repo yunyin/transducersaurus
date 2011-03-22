@@ -104,11 +104,15 @@ class ContextDependency( ):
         return
 
     def _make_aux( self, lp, rp ):
-        """Generate auxiliary symbol arcs."""
+        """Generate auxiliary symbol arcs. Don't make duplicates."""
         issym = lp+','+rp
 
         for a in self.aux:
-            print issym, issym, self.eps, a
+            if (issym,issym,self.eps,a) in self.seen:
+                continue
+            else:
+                print issym, issym, self.eps, a
+                self.seen.add((issym,issym,self.eps,a))
         return
 
     def generate_deterministic( self ):
@@ -123,6 +127,7 @@ class ContextDependency( ):
             #Monophone arcs
             self._make_arc( self.eps, lp, self.eps )
             self._make_final( lp, self.eps )
+            self._make_aux( lp, self.eps )
             for mp in self.phons:
                 for pos in ['b','i','e','s']:
                     #Initial to Internal arcs
@@ -136,6 +141,7 @@ class ContextDependency( ):
                             
         for a in self.aux:
             self.osyms.add(a)
+            self.isyms.add(a)
         return
 
     def print_isyms( self ):
@@ -147,6 +153,8 @@ class ContextDependency( ):
                 isyms_fp.write("%s %d\n" % (fields[0], i+1))
             else:
                 isyms_fp.write("%s-%s_%s+%s %d\n" % (fields[1], fields[0], fields[3], fields[2], i+1))
+        for i,a in enumerate(self.aux):
+            isyms_fp.write("%s %d\n" % (a, len(self.mdef.allfields)+i+1))
         isyms_fp.close()
         return
 
