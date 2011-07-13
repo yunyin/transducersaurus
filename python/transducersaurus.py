@@ -51,7 +51,7 @@ class GenerateCascade( ):
     
     def __init__( self, tiedlist, lexicon, arpa, buildcommand, hmmdefs=None, prefix="test",
                   amtype="htk", semiring="log", failure=None, auxout=3, basedir="",
-                  eps="<eps>", sil="sil", convert=None, order=0, regex=False, normalizeG=False ):
+                  eps="<eps>", sil="sil", convert=None, order=0, regex=False ):
         
         self._grammar = re.compile(
              r"""\s*(?:
@@ -81,7 +81,7 @@ class GenerateCascade( ):
         self.postfix        = self._toPostfix(self.buildcommand)
         self.convert        = convert
         self.regex          = regex
-        self.normalize       = self._set_normalize( normalizeG )
+        self.normalize       = self._set_normalize( False )
         self.word_osyms	    = None
         self.am_isyms       = None
         
@@ -89,11 +89,9 @@ class GenerateCascade( ):
         """
           Run the WFST normalization program.
           All this does is normalize the arc weights for each state.
+          Pass for now.
         """
-        if normalizeG==True:
-            return "| ./normalizeG -i - -o - "
-        else:
-            return ""
+        return ""
         
     def _set_aux( self, auxout ):
         #this should work for now but is not very future proof.
@@ -752,7 +750,6 @@ Unbalanced parentheses will be caught:
     parser.add_argument('--sil',        "-s", help='Silence monophone symbol.', default="sil")
     parser.add_argument('--jfsg',       "-j", help='The grammar is a regular expression/JFSG style grammar. Specify "classic" or "new" for the algorithm.', default=None )
     parser.add_argument('--tiedlist',   "-t", help='Acoustic model tied list. mdef file for Sphinx, tiedlist file for HTK', required=True)
-    parser.add_argument('--normalize',  "-N", help='Normalize arc weights for each state in the LM WFSA.', default=False, action="store_true" )
     parser.add_argument('--verbose',    "-v", help='Verbose mode.', default=False, action="store_true")
     args = parser.parse_args()
 
@@ -787,7 +784,6 @@ Unbalanced parentheses will be caught:
         basedir=args.basedir,
         convert=args.convert,
         regex=args.jfsg,
-        normalizeG=args.normalize
     )
     if args.no_compile==False:
         cascade.compileFSTs( )
